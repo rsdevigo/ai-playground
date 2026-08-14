@@ -11,8 +11,13 @@ public class FoxController : MonoBehaviour
     float _runSpeed = 5f;
     [SerializeField]
     Animator _animator;
-
+    [SerializeField]
+    Transform[] _runWaypoints;
     int _currentWaypoint = 0;
+    [SerializeField]
+    float _timerDance;
+    [SerializeField]
+    float _danceDuration = 3f;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -24,52 +29,63 @@ public class FoxController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        this.Dance();
+        this.Patrol();
     }
 
     public void Patrol()
     {
         if (_waypoints.Length == 0) return;
 
+        if (_currentWaypoint >= _waypoints.Length)
+        {
+            this.Dance();
+            return;
+        }
+
         if (!_animator.GetBool("walk"))
         {
             _animator.SetBool("idle", false);
             _animator.SetBool("walk", true);
         }
-            
+
 
         Transform target = _waypoints[_currentWaypoint];
         _MoveTo(target, _patrolSpeed);
 
         if (Vector3.Distance(transform.position, target.position) < 0.1f)
         {
-            _currentWaypoint++;
-
-            if (_currentWaypoint >= _waypoints.Length)
-                _currentWaypoint = 0;
+            _currentWaypoint++;                
         }
     }
 
     void Run()
     {
-        if (_waypoints.Length == 0) return;
+        if (_runWaypoints.Length == 0) return;
+
+        if (_currentWaypoint >= _runWaypoints.Length)
+        {
+            if (_animator.GetBool("run"))
+            {
+                _animator.SetBool("idle", true);
+                _animator.SetBool("run", false);
+            }
+
+            return;
+        }
 
         if (!_animator.GetBool("run"))
         {
             _animator.SetBool("idle", false);
             _animator.SetBool("run", true);
         }
-            
 
-        Transform target = _waypoints[_currentWaypoint];
+
+        Transform target = _runWaypoints[_currentWaypoint];
         _MoveTo(target, _runSpeed);
 
         if (Vector3.Distance(transform.position, target.position) < 0.1f)
         {
             _currentWaypoint++;
-
-            if (_currentWaypoint >= _waypoints.Length)
-                _currentWaypoint = 0;
         }
     }
 
@@ -95,8 +111,20 @@ public class FoxController : MonoBehaviour
     {
         if (!_animator.GetBool("dance"))
         {
-            _animator.SetBool("idle", false);
+            if (_animator.GetBool("idle"))
+                _animator.SetBool("idle", false);
+            if (_animator.GetBool("walk"))
+                _animator.SetBool("walk", false);
             _animator.SetBool("dance", true);
+            _timerDance = _danceDuration;
+        }
+
+        _timerDance -= Time.deltaTime;
+
+        if (_timerDance < 0f)
+        {
+            _animator.SetBool("dance", false);
+            _currentWaypoint = 0;
         }
     }
 }
