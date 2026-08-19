@@ -1,60 +1,57 @@
 using UnityEngine;
 
+public enum FOXSTATES {
+    PATROL = 0,
+    DANCE,
+    RUN
+}
+
+
 public class FoxController : MonoBehaviour
 {
-
+    FSM _fsm;
     [SerializeField]
-    Transform[] _waypoints;
+    public Transform[] waypoints;
     [SerializeField]
     float _patrolSpeed = 2f;
     [SerializeField]
     float _runSpeed = 5f;
     [SerializeField]
-    Animator _animator;
+    public Animator animator;
     [SerializeField]
     Transform[] _runWaypoints;
-    int _currentWaypoint = 0;
+    public int currentWaypoint = 0;
     [SerializeField]
-    float _timerDance;
+    public float timerDance;
     [SerializeField]
-    float _danceDuration = 3f;
+    public float danceDuration = 3f;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        _animator.SetBool("idle", true);
-        _currentWaypoint = 0;
+        currentWaypoint = 0;
+        _fsm = new FSM();
+        _fsm.states[FOXSTATES.PATROL] = new PatrolState(_fsm, this, "walk");
+        _fsm.states[FOXSTATES.DANCE] = new DanceState(_fsm, this, "dance");
+        _fsm.SetCurrentState(_fsm.states[FOXSTATES.PATROL]);
     }
 
     // Update is called once per frame
     void Update()
     {
-        this.Patrol();
+        _fsm.Update();
     }
 
     public void Patrol()
     {
-        if (_waypoints.Length == 0) return;
+        if (waypoints.Length == 0) return;
 
-        if (_currentWaypoint >= _waypoints.Length)
-        {
-            this.Dance();
-            return;
-        }
-
-        if (!_animator.GetBool("walk"))
-        {
-            _animator.SetBool("idle", false);
-            _animator.SetBool("walk", true);
-        }
-
-
-        Transform target = _waypoints[_currentWaypoint];
+        Transform target = waypoints[currentWaypoint];
         _MoveTo(target, _patrolSpeed);
 
         if (Vector3.Distance(transform.position, target.position) < 0.1f)
         {
-            _currentWaypoint++;                
+            currentWaypoint++;                
         }
     }
 
@@ -62,30 +59,30 @@ public class FoxController : MonoBehaviour
     {
         if (_runWaypoints.Length == 0) return;
 
-        if (_currentWaypoint >= _runWaypoints.Length)
+        if (currentWaypoint >= _runWaypoints.Length)
         {
-            if (_animator.GetBool("run"))
+            if (animator.GetBool("run"))
             {
-                _animator.SetBool("idle", true);
-                _animator.SetBool("run", false);
+                animator.SetBool("idle", true);
+                animator.SetBool("run", false);
             }
 
             return;
         }
 
-        if (!_animator.GetBool("run"))
+        if (!animator.GetBool("run"))
         {
-            _animator.SetBool("idle", false);
-            _animator.SetBool("run", true);
+            animator.SetBool("idle", false);
+            animator.SetBool("run", true);
         }
 
 
-        Transform target = _runWaypoints[_currentWaypoint];
+        Transform target = _runWaypoints[currentWaypoint];
         _MoveTo(target, _runSpeed);
 
         if (Vector3.Distance(transform.position, target.position) < 0.1f)
         {
-            _currentWaypoint++;
+            currentWaypoint++;
         }
     }
 
@@ -104,27 +101,6 @@ public class FoxController : MonoBehaviour
         if (direction != Vector3.zero)
         {
             transform.rotation = Quaternion.LookRotation(direction);
-        }
-    }
-
-    public void Dance()
-    {
-        if (!_animator.GetBool("dance"))
-        {
-            if (_animator.GetBool("idle"))
-                _animator.SetBool("idle", false);
-            if (_animator.GetBool("walk"))
-                _animator.SetBool("walk", false);
-            _animator.SetBool("dance", true);
-            _timerDance = _danceDuration;
-        }
-
-        _timerDance -= Time.deltaTime;
-
-        if (_timerDance < 0f)
-        {
-            _animator.SetBool("dance", false);
-            _currentWaypoint = 0;
         }
     }
 }

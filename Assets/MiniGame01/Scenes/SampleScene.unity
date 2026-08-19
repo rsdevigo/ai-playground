@@ -186,14 +186,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: afd85d1af40f471469635d592141f83c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _waypoints:
-  - {fileID: 859570539}
+  waypoints:
   - {fileID: 468270357}
   - {fileID: 1857295648}
   - {fileID: 1246408047}
+  - {fileID: 859570539}
   _patrolSpeed: 2
   _runSpeed: 5
-  _animator: {fileID: 559742269}
+  animator: {fileID: 559742269}
   _runWaypoints:
   - {fileID: 859570539}
   - {fileID: 300205585}
@@ -201,6 +201,9 @@ MonoBehaviour:
   - {fileID: 739274337}
   - {fileID: 391687378}
   - {fileID: 389642135}
+  currentWaypoint: 0
+  _timerDance: 0
+  _danceDuration: 3
 --- !u!1001 &253552601
 PrefabInstance:
   m_ObjectHideFlags: 0
